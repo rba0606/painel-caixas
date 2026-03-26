@@ -3,50 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Profissional</title>
+<title>Painel TV Caixas</title>
 
 <style>
-body{font-family:Arial;background:#0f172a;color:#fff;margin:0}
-header{text-align:center;padding:15px;background:#1e293b}
+body{font-family:Arial;background:#020617;color:#fff;margin:0}
 
-button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px;background:#3b82f6;color:#fff}
+header{
+text-align:center;
+padding:15px;
+background:#1e293b;
+font-size:20px;
+}
 
-.card{background:#1e293b;margin:10px;padding:10px;border-radius:10px}
-.row{display:flex;flex-wrap:wrap;gap:6px}
+button{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:none;
+border-radius:8px;
+background:#3b82f6;
+color:#fff;
+font-size:14px;
+}
 
-.caixa{padding:10px;border-radius:8px;font-size:12px;cursor:pointer;display:flex;flex-direction:column}
+.container{
+display:grid;
+grid-template-columns:1fr;
+gap:12px;
+padding:10px;
+}
+
+.card{
+background:#1e293b;
+padding:12px;
+border-radius:12px;
+position:relative;
+}
+
+.intervalo{
+position:absolute;
+top:10px;
+right:10px;
+background:#ef4444;
+padding:4px 8px;
+border-radius:8px;
+font-size:12px;
+}
+
+.row{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-top:8px;
+}
+
+.caixa{
+padding:12px;
+border-radius:10px;
+font-size:14px;
+cursor:pointer;
+display:flex;
+flex-direction:column;
+}
+
 .pix{background:#22c55e}
 .cartao{background:#f59e0b}
 .apoio{background:#ef4444}
 .presente{background:#3b82f6!important}
 
-.role{font-size:10px}
+.role{font-size:11px}
+
+@media(min-width:768px){
+.container{grid-template-columns:1fr 1fr}
+.caixa{font-size:16px}
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2>Painel Profissional</h2>
-<p>Modo compartilhável (sem Firebase)</p>
+📺 Painel Geral de Caixas
 </header>
 
 <div style="padding:10px">
-<textarea id="nomes" placeholder="Cole nomes"></textarea>
+<textarea id="nomes" placeholder="Cole nomes" style="width:100%;height:60px"></textarea>
 <button onclick="carregar()">Aplicar nomes</button>
 
-<button onclick="exportar()">📤 Gerar link compartilhável</button>
-<button onclick="importar()">📥 Importar estado</button>
+<button onclick="exportar()">📤 Compartilhar</button>
 </div>
 
-<div id="painel"></div>
+<div class="container" id="painel"></div>
 
 <script>
 const escala={
-"Quinta":{pix:[1,2],c1:[3,4],c2:[5,6],a:[7,8,9,10]},
-"Sexta":{pix:[11,12],c1:[13,14],c2:[15,16],a:[17,18,19,20]},
-"Sábado":{pix:[21,22],c1:[23,24],c2:[25,1],a:[2,3,4,5]},
-"Domingo":{pix:[6,7],c1:[8,9],c2:[10,11],a:[12,13,14,15,16,17]}
+"Quinta":{i:"16:10",pix:[1,2],c1:[3,4],c2:[5,6],a:[7,8,9,10]},
+"Sexta":{i:"11:00",pix:[11,12],c1:[13,14],c2:[15,16],a:[17,18,19,20]},
+"Sábado":{i:"11:00",pix:[21,22],c1:[23,24],c2:[25,1],a:[2,3,4,5]},
+"Domingo":{i:"17:20",pix:[6,7],c1:[8,9],c2:[10,11],a:[12,13,14,15,16,17]}
 };
 
 let nomes=JSON.parse(localStorage.getItem("nomes")||"{}");
@@ -81,13 +135,19 @@ el.innerHTML="";
 
 Object.keys(escala).forEach(dia=>{
 let d=escala[dia];
+
 let card=document.createElement("div");
 card.className="card";
-card.innerHTML="<b>"+dia+"</b>";
+
+card.innerHTML=`
+<b style="font-size:18px">${dia}</b>
+<div class="intervalo">⏱ ${d.i}</div>
+`;
 
 function sec(t,l,cls){
 let s=document.createElement("div");
 s.innerHTML="<small>"+t+"</small>";
+
 let r=document.createElement("div");
 r.className="row";
 
@@ -130,30 +190,24 @@ salvar();
 render();
 }
 
-// 🔥 EXPORTAR ESTADO
 function exportar(){
-let data = btoa(JSON.stringify({nomes,pres,roles}));
-let link = location.origin + location.pathname + "?data=" + data;
-prompt("Copie o link:", link);
+let data=btoa(JSON.stringify({nomes,pres,roles}));
+let link=location.origin+location.pathname+"?data="+data;
+prompt("Compartilhe:",link);
 }
 
-// 🔥 IMPORTAR
 function importar(){
-let param = new URLSearchParams(window.location.search).get("data");
+let param=new URLSearchParams(window.location.search).get("data");
 if(param){
-let data = JSON.parse(atob(param));
+let data=JSON.parse(atob(param));
 nomes=data.nomes||nomes;
 pres=data.pres||pres;
 roles=data.roles||roles;
 salvar();
 render();
-alert("Dados carregados!");
-}else{
-alert("Nenhum dado encontrado no link");
 }
 }
 
-// AUTO IMPORTAR
 window.onload=importar;
 
 render();
