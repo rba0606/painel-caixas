@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Caixas</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#fff;margin:0}
+
+header{padding:16px;text-align:center;background:linear-gradient(135deg,#1e293b,#0f172a)}
+header h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;font-size:13px;color:#94a3b8}
+
+.status{background:#22c55e;padding:6px 10px;border-radius:10px;font-size:12px;display:inline-block;margin-top:6px}
+
+.dashboard{padding:10px;background:#020617}
+.stats{display:flex;justify-content:space-around;text-align:center}
+.stat strong{font-size:18px}
+
+.container{display:flex;flex-direction:column;gap:10px;padding:10px}
+.card{background:#1e293b;padding:12px;border-radius:16px}
+.card-header{display:flex;justify-content:space-between}
+.badge{background:#ef4444;padding:4px 8px;border-radius:8px;font-size:11px}
+
+.section{margin-top:10px}
+.section-title{font-size:13px;color:#94a3b8;margin-bottom:4px}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+
+.caixa{padding:8px;border-radius:10px;font-size:12px;cursor:pointer;display:flex;flex-direction:column}
+.pix{background:#22c55e}
+.cartao{background:#f59e0b}
+.apoio{background:#ef4444}
+.role{font-size:10px}
+.presente{background:#3b82f6 !important}
+
+.controls{display:flex;gap:6px;padding:10px}
+.controls input{flex:1;padding:8px;border-radius:8px;border:none}
+.controls button{padding:8px;border:none;border-radius:8px;background:#3b82f6;color:#fff}
+
+textarea{width:100%;height:60px;border-radius:10px;padding:8px;border:none}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Painel de Caixas</h1>
+<p>Tempo real • Duplas • ZAC</p>
+<div class="status">🟢 Online</div>
+</header>
+
+<div class="controls">
+<input type="number" id="tempo" value="15">
+<button onclick="iniciar()">Rodízio</button>
+<button onclick="parar()">Parar</button>
+</div>
+
+<div class="dashboard">
+<div class="stats">
+<div class="stat">👥<br><strong id="total">0</strong></div>
+<div class="stat">💳<br><strong id="cartao">0</strong></div>
+<div class="stat">💸<br><strong id="pix">0</strong></div>
+</div>
+</div>
+
+<div style="padding:10px">
+<textarea id="nomes" placeholder="Cole nomes (1 por linha)"></textarea>
+<button onclick="carregarNomes()">Aplicar nomes</button>
+</div>
+
+<div class="container" id="painel"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// 🔥 COLE AQUI SUAS CHAVES DO FIREBASE
+const firebaseConfig = {
+  apiKey: "SUA_KEY",
+  authDomain: "SEU_APP.firebaseapp.com",
+  databaseURL: "https://SEU_APP.firebaseio.com",
+  projectId: "SEU_APP"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const escala = {
+  "Quinta": {i:"16:10", pix:[1,2], c1:[3,4], c2:[5,6], a:[7,8,9,10]},
+  "Sexta": {i:"11:00", pix:[11,12], c1:[13,14], c2:[15,16], a:[17,18,19,20]},
+  "Sábado": {i:"11:00", pix:[21,22], c1:[23,24], c2:[25,1], a:[2,3,4,5]},
+  "Domingo": {i:"17:20", pix:[6,7], c1:[8,9], c2:[10,11], a:[12,13,14,15,16,17]}
+};
+
+let nomes={}, presencas={}, roles={}, timer=null;
+
+function nome(n){return nomes[n]||`Caixa ${n}`}
+
+function salvar(){db.ref("dados").set({nomes,presencas,roles})}
+
+db.ref("dados").on("value",s=>{
+  let d=s.val()||{};
+  nomes=d.nomes||{};
+  presencas=d.presencas||{};
+  roles=d.roles||{};
+  render();
+});
+
+function toggle(n){
+  presencas[n]=!presencas[n];
+  salvar();
+}
+
+function rodizio(){
+  Object.values(escala).forEach(d=>{
+    [d.pix,d.c1,d.c2].forEach(lista=>{
+      for(let i=0;i<lista.length;i+=2){
+        let a=nome(lista[i]),b=nome(lista[i+1]);
+        let r=roles[a]||"Operador";
+        roles[a]=roles[b]||"ZAC";
+        roles[b]=r;
+      }
+    });
+  });
+  salvar();
+}
+
+function iniciar(){
+  let t=document.getElementById("tempo").value;
+  timer=setInterval(rodizio,t*60000);
+}
+
+function parar(){clearInterval(timer)}
+
+function render(){
+  let total=0,p=0,c=0;
+  let el=document.getElementById("painel");
+  el.innerHTML="";
+
+  Object.keys(escala).forEach(dia=>{
+    let d=escala[dia];
+    let card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`<div class="card-header"><strong>${dia}</strong><span class="badge">${d.i}</span></div>`;
+
+    function sec(t,l,cls){
+      let s=document.createElement("div");
+      s.className="section";
+      s.innerHTML=`<div class="section-title">${t}</div>`;
+      let r=document.createElement("div");
+      r.className="row";
+
+      l.forEach((n,i)=>{
+        let nm=nome(n);
+        if(!roles[nm]) roles[nm]=i%2==0?"Operador":"ZAC";
+
+        let div=document.createElement("div");
+        div.className="caixa "+cls;
+        if(presencas[nm]){
+          div.classList.add("presente");
+          total++;
+          if(cls=="pix")p++;
+          if(cls=="cartao")c++;
+        }
+
+        div.innerHTML=`${nm}<span class="role">${roles[nm]}</span>`;
+        div.onclick=()=>toggle(nm);
+        r.appendChild(div);
+      });
+
+      s.appendChild(r);
+      return s;
+    }
+
+    card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
+    card.appendChild(sec("Cartão 1",d.c1,"cartao"));
+    card.appendChild(sec("Cartão 2",d.c2,"cartao"));
+    card.appendChild(sec("Apoio",d.a,"apoio"));
+
+    el.appendChild(card);
+  });
+
+  document.getElementById("total").innerText=total;
+  document.getElementById("pix").innerText=p;
+  document.getElementById("cartao").innerText=c;
+}
+
+function carregarNomes(){
+  let lista=document.getElementById("nomes").value.split("\n");
+  lista.forEach((n,i)=>{if(n.trim())nomes[i+1]=n.trim()});
+  salvar();
+}
+</script>
+
+</body>
+</html>
