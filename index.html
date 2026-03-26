@@ -14,6 +14,8 @@ header{padding:15px;text-align:center;background:#1e293b}
 .pix{background:#22c55e}
 .apoio{background:#ef4444}
 .presente{background:#3b82f6!important}
+
+button{cursor:pointer}
 </style>
 </head>
 
@@ -21,17 +23,43 @@ header{padding:15px;text-align:center;background:#1e293b}
 
 <header>
 <h2>Painel de Caixas</h2>
-<p>Modo simples (sem internet)</p>
+<p>Modo simples (sem sincronização)</p>
 </header>
 
+<!-- BOTÃO PARA ABRIR O PAINEL ONLINE -->
 <div style="padding:10px">
-<textarea id="nomes" placeholder="Cole nomes (1 por linha)" style="width:100%;height:60px"></textarea>
-<button onclick="carregar()">Aplicar nomes</button>
+<button style="
+  width:100%;
+  padding:15px;
+  font-size:16px;
+  background:#22c55e;
+  color:white;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+" onclick="abrirPainel()">
+📲 Abrir Painel Online
+</button>
 </div>
 
+<!-- INPUT DE NOMES -->
+<div style="padding:10px">
+<textarea id="nomes" placeholder="Cole nomes (1 por linha)" style="width:100%;height:60px"></textarea>
+<button onclick="carregar()" style="margin-top:5px;width:100%;padding:10px;border-radius:8px;border:none;background:#3b82f6;color:#fff">
+Aplicar nomes
+</button>
+</div>
+
+<!-- PAINEL -->
 <div id="painel"></div>
 
 <script>
+// 🔗 LINK DO SEU PAINEL ONLINE
+function abrirPainel(){
+  window.open('https://rba0606.github.io/painel-caixas/', '_blank');
+}
+
+// 📊 ESCALA
 const escala={
 "Quinta":{pix:[1,2],c1:[3,4],c2:[5,6],a:[7,8,9,10]},
 "Sexta":{pix:[11,12],c1:[13,14],c2:[15,16],a:[17,18,19,20]},
@@ -39,68 +67,81 @@ const escala={
 "Domingo":{pix:[6,7],c1:[8,9],c2:[10,11],a:[12,13,14,15,16,17]}
 };
 
+// 💾 DADOS LOCAIS
 let nomes=JSON.parse(localStorage.getItem("nomes")||"{}");
 let pres=JSON.parse(localStorage.getItem("pres")||"{}");
 
-function nome(n){return nomes[n]||"Caixa "+n}
+// 🔤 NOME
+function nome(n){
+  return nomes[n] || "Caixa "+n;
+}
 
+// 💾 SALVAR
 function salvar(){
-localStorage.setItem("nomes",JSON.stringify(nomes));
-localStorage.setItem("pres",JSON.stringify(pres));
+  localStorage.setItem("nomes",JSON.stringify(nomes));
+  localStorage.setItem("pres",JSON.stringify(pres));
 }
 
+// ✅ PRESENÇA
 function toggle(n){
-pres[n]=!pres[n];
-salvar();
-render();
+  pres[n]=!pres[n];
+  salvar();
+  render();
 }
 
+// 🎨 RENDER
 function render(){
-let el=document.getElementById("painel");
-el.innerHTML="";
+  let el=document.getElementById("painel");
+  el.innerHTML="";
 
-Object.keys(escala).forEach(dia=>{
-let d=escala[dia];
-let card=document.createElement("div");
-card.className="card";
-card.innerHTML="<b>"+dia+"</b>";
+  Object.keys(escala).forEach(dia=>{
+    let d=escala[dia];
+    let card=document.createElement("div");
+    card.className="card";
+    card.innerHTML="<b>"+dia+"</b>";
 
-function sec(t,l,cls){
-let s=document.createElement("div");
-s.innerHTML="<small>"+t+"</small>";
-let r=document.createElement("div");
-r.className="row";
+    function sec(t,l,cls){
+      let s=document.createElement("div");
+      s.innerHTML="<small>"+t+"</small>";
+      let r=document.createElement("div");
+      r.className="row";
 
-l.forEach(n=>{
-let nm=nome(n);
-let div=document.createElement("div");
-div.className="caixa "+cls;
-if(pres[n])div.classList.add("presente");
-div.innerText=nm;
-div.onclick=()=>toggle(n);
-r.appendChild(div);
-});
+      l.forEach(n=>{
+        let nm=nome(n);
+        let div=document.createElement("div");
+        div.className="caixa "+cls;
+        if(pres[n]) div.classList.add("presente");
 
-s.appendChild(r);
-return s;
+        div.innerText=nm;
+        div.onclick=()=>toggle(n);
+
+        r.appendChild(div);
+      });
+
+      s.appendChild(r);
+      return s;
+    }
+
+    card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
+    card.appendChild(sec("Cartão 1",d.c1,""));
+    card.appendChild(sec("Cartão 2",d.c2,""));
+    card.appendChild(sec("Apoio",d.a,"apoio"));
+
+    el.appendChild(card);
+  });
 }
 
-card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
-card.appendChild(sec("Cartão 1",d.c1,""));
-card.appendChild(sec("Cartão 2",d.c2,""));
-card.appendChild(sec("Apoio",d.a,"apoio"));
-
-el.appendChild(card);
-});
-}
-
+// 📥 CARREGAR NOMES
 function carregar(){
-let lista=document.getElementById("nomes").value.split("\\n");
-lista.forEach((n,i)=>{if(n.trim())nomes[i+1]=n.trim()});
-salvar();
-render();
+  let lista=document.getElementById("nomes").value.split("\\n");
+  lista.forEach((n,i)=>{
+    if(n.trim()) nomes[i+1]=n.trim();
+  });
+  salvar();
+  render();
 }
 
+// 🚀 INICIAR
 render();
 </script>
 
