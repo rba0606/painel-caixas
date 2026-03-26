@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel de Caixas</title>
+<title>Painel Profissional de Caixas</title>
 
 <style>
 body{font-family:Arial;background:#0f172a;color:#fff;margin:0}
+
 header{padding:15px;text-align:center;background:#1e293b}
+.stats{display:flex;justify-content:space-around;padding:10px;background:#020617}
+.stat{font-size:14px;text-align:center}
 
 .card{background:#1e293b;margin:10px;padding:10px;border-radius:10px}
 .row{display:flex;flex-wrap:wrap;gap:6px}
@@ -15,61 +18,51 @@ header{padding:15px;text-align:center;background:#1e293b}
 .caixa{
   padding:10px;
   border-radius:8px;
-  background:#f59e0b;
   cursor:pointer;
-  font-size:13px;
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
 }
 
 .pix{background:#22c55e}
+.cartao{background:#f59e0b}
 .apoio{background:#ef4444}
 .presente{background:#3b82f6!important}
 
-button{cursor:pointer}
+.role{
+  font-size:10px;
+  opacity:0.8;
+}
+
+.operador{border:2px solid #fff}
+.zac{border:2px dashed #fff}
+
 textarea{width:100%;height:70px;border-radius:10px;padding:8px;border:none}
+button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px;background:#3b82f6;color:#fff}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2>Painel de Caixas</h2>
-<p>Modo simples otimizado</p>
+<h2>Painel Profissional</h2>
+<p>Caixas • Duplas • ZAC</p>
 </header>
 
-<!-- BOTÃO -->
-<div style="padding:10px">
-<button style="
-  width:100%;
-  padding:15px;
-  font-size:16px;
-  background:#22c55e;
-  color:white;
-  border:none;
-  border-radius:12px;
-  font-weight:bold;
-" onclick="abrirPainel()">
-📲 Abrir Painel Online
-</button>
+<div class="stats">
+<div class="stat">👥<br><strong id="total">0</strong></div>
+<div class="stat">💳<br><strong id="cartao">0</strong></div>
+<div class="stat">💸<br><strong id="pix">0</strong></div>
 </div>
 
-<!-- NOMES -->
 <div style="padding:10px">
-<textarea id="nomes" placeholder="Cole nomes (1 por linha)"></textarea>
-<button onclick="carregar()" style="margin-top:6px;width:100%;padding:10px;border-radius:8px;border:none;background:#3b82f6;color:#fff">
-Aplicar nomes
-</button>
+<textarea id="nomes" placeholder="Cole nomes"></textarea>
+<button onclick="carregar()">Aplicar nomes</button>
 </div>
 
-<!-- PAINEL -->
 <div id="painel"></div>
 
 <script>
-// LINK
-function abrirPainel(){
-  window.open('https://rba0606.github.io/painel-caixas/', '_blank');
-}
-
-// ESCALA
 const escala={
 "Quinta":{pix:[1,2],c1:[3,4],c2:[5,6],a:[7,8,9,10]},
 "Sexta":{pix:[11,12],c1:[13,14],c2:[15,16],a:[17,18,19,20]},
@@ -77,97 +70,106 @@ const escala={
 "Domingo":{pix:[6,7],c1:[8,9],c2:[10,11],a:[12,13,14,15,16,17]}
 };
 
-// DADOS
 let nomes=JSON.parse(localStorage.getItem("nomes")||"{}");
 let pres=JSON.parse(localStorage.getItem("pres")||"{}");
+let roles=JSON.parse(localStorage.getItem("roles")||"{}");
 
-// GARANTE 25 CAIXAS
-if(Object.keys(nomes).length === 0){
-  for(let i=1;i<=25;i++){
-    nomes[i] = "Caixa " + i;
-  }
+if(Object.keys(nomes).length===0){
+for(let i=1;i<=25;i++) nomes[i]="Caixa "+i;
 }
 
-// NOME
-function nome(n){
-  return nomes[n] || "Caixa " + n;
-}
+function nome(n){return nomes[n]||"Caixa "+n}
 
-// SALVAR
 function salvar(){
-  localStorage.setItem("nomes",JSON.stringify(nomes));
-  localStorage.setItem("pres",JSON.stringify(pres));
+localStorage.setItem("nomes",JSON.stringify(nomes));
+localStorage.setItem("pres",JSON.stringify(pres));
+localStorage.setItem("roles",JSON.stringify(roles));
 }
 
-// PRESENÇA
 function toggle(n){
-  pres[n]=!pres[n];
-  salvar();
-  render();
+pres[n]=!pres[n];
+salvar();
+render();
 }
 
-// RENDER
+function trocar(nome){
+roles[nome]=roles[nome]==="ZAC"?"Operador":"ZAC";
+salvar();
+render();
+}
+
 function render(){
-  let el=document.getElementById("painel");
-  el.innerHTML="";
+let total=0,p=0,c=0;
+let el=document.getElementById("painel");
+el.innerHTML="";
 
-  Object.keys(escala).forEach(dia=>{
-    let d=escala[dia];
-    let card=document.createElement("div");
-    card.className="card";
-    card.innerHTML="<b>"+dia+"</b>";
+Object.keys(escala).forEach(dia=>{
+let d=escala[dia];
+let card=document.createElement("div");
+card.className="card";
+card.innerHTML="<b>"+dia+"</b>";
 
-    function sec(t,l,cls){
-      let s=document.createElement("div");
-      s.innerHTML="<small>"+t+"</small>";
-      let r=document.createElement("div");
-      r.className="row";
+function sec(t,l,cls){
+let s=document.createElement("div");
+s.innerHTML="<small>"+t+"</small>";
+let r=document.createElement("div");
+r.className="row";
 
-      l.forEach(n=>{
-        let nm=nome(n);
+l.forEach((n,i)=>{
+let nm=nome(n);
 
-        let div=document.createElement("div");
-        div.className="caixa "+cls;
+if(!roles[nm]) roles[nm]=i%2==0?"Operador":"ZAC";
 
-        if(pres[n]) div.classList.add("presente");
+let div=document.createElement("div");
+div.className="caixa "+cls;
 
-        div.innerText=nm;
-        div.onclick=()=>toggle(n);
+if(roles[nm]==="Operador") div.classList.add("operador");
+else div.classList.add("zac");
 
-        r.appendChild(div);
-      });
-
-      s.appendChild(r);
-      return s;
-    }
-
-    card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
-    card.appendChild(sec("Cartão 1",d.c1,""));
-    card.appendChild(sec("Cartão 2",d.c2,""));
-    card.appendChild(sec("Apoio",d.a,"apoio"));
-
-    el.appendChild(card);
-  });
+if(pres[n]){
+div.classList.add("presente");
+total++;
+if(cls==="pix")p++;
+if(cls==="cartao")c++;
 }
 
-// CARREGAR NOMES (CORRIGIDO)
+div.innerHTML=`${nm}<span class="role">${roles[nm]}</span>`;
+
+div.onclick=()=>toggle(n);
+div.ondblclick=()=>trocar(nm);
+
+r.appendChild(div);
+});
+
+s.appendChild(r);
+return s;
+}
+
+card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
+card.appendChild(sec("Cartão 1",d.c1,"cartao"));
+card.appendChild(sec("Cartão 2",d.c2,"cartao"));
+card.appendChild(sec("Apoio",d.a,"apoio"));
+
+el.appendChild(card);
+});
+
+document.getElementById("total").innerText=total;
+document.getElementById("pix").innerText=p;
+document.getElementById("cartao").innerText=c;
+}
+
 function carregar(){
-  let lista=document.getElementById("nomes").value.split("\n");
+let lista=document.getElementById("nomes").value.split("\\n");
+nomes={};
 
-  nomes = {}; // limpa antes
+lista.forEach((n,i)=>{
+if(n.trim()) nomes[i+1]=n.trim();
+});
 
-  lista.forEach((n,i)=>{
-    let numero = i + 1;
-    if(n.trim()){
-      nomes[numero] = n.trim();
-    }
-  });
-
-  salvar();
-  render();
+salvar();
+render();
 }
 
-// INICIAR
 render();
 </script>
 
