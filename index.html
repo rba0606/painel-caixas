@@ -3,41 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Caixas</title>
+<title>Painel de Caixas</title>
 
 <style>
 body{font-family:Arial;background:#020617;color:#fff;margin:0}
 
-.hidden{display:none}
-
 header{text-align:center;padding:15px;background:#1e293b}
-
-.menu{
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.menu button{
-width:80%;
-padding:20px;
-margin:10px;
-font-size:18px;
-border:none;
-border-radius:15px;
-font-weight:bold;
-}
-
-.painel-btn{background:#22c55e}
-.tv-btn{background:#3b82f6}
 
 .topo{padding:10px}
 
-textarea{width:100%;height:60px;border-radius:10px;padding:8px;border:none}
+textarea{
+width:100%;
+height:60px;
+border-radius:10px;
+padding:8px;
+border:none;
+}
 
-button{cursor:pointer}
+button{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:none;
+border-radius:8px;
+background:#3b82f6;
+color:#fff;
+font-size:14px;
+cursor:pointer;
+}
 
 .container{
 display:grid;
@@ -94,63 +87,20 @@ flex-direction:column;
 
 <body>
 
-<!-- MENU -->
-<div id="menu" class="menu">
-<h2>📲 Sistema de Caixas</h2>
-
-<button class="painel-btn" onclick="abrirPainel()">Abrir Painel</button>
-<button class="tv-btn" onclick="abrirTV()">Modo TV</button>
-</div>
-
-<!-- PAINEL -->
-<div id="app" class="hidden">
-
 <header>📊 Painel de Caixas</header>
 
 <div class="topo">
-<textarea id="nomes" placeholder="Cole nomes"></textarea>
-<button onclick="carregar()" style="width:100%;margin-top:5px;padding:10px;background:#3b82f6;border:none;border-radius:8px;color:#fff">
-Aplicar nomes
-</button>
+<textarea id="nomes" placeholder="Cole nomes (1 por linha)"></textarea>
 
-<button onclick="exportar()" style="width:100%;margin-top:5px;padding:10px;background:#22c55e;border:none;border-radius:8px;color:#fff">
-📤 Compartilhar
-</button>
+<button onclick="carregar()">Aplicar nomes</button>
 
-<button onclick="voltar()" style="width:100%;margin-top:5px;padding:10px;background:#ef4444;border:none;border-radius:8px;color:#fff">
-⬅️ Voltar
-</button>
+<button onclick="exportar()">📤 Compartilhar</button>
 </div>
 
 <div class="container" id="painel"></div>
 
-</div>
-
 <script>
-// CONTROLE DE TELA
-function abrirPainel(){
-document.getElementById("menu").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
-render();
-}
-
-function abrirTV(){
-abrirPainel();
-document.querySelector("header").style.display="none";
-document.querySelector(".topo").style.display="none";
-
-setTimeout(()=>{
-if(document.documentElement.requestFullscreen){
-document.documentElement.requestFullscreen().catch(()=>{});
-}
-},500);
-}
-
-function voltar(){
-location.reload();
-}
-
-// ESCALA
+// ESCALA + INTERVALOS
 const escala={
 "Quinta":{i:"16:10",pix:[1,2],c1:[3,4],c2:[5,6],a:[7,8,9,10]},
 "Sexta":{i:"11:00",pix:[11,12],c1:[13,14],c2:[15,16],a:[17,18,19,20]},
@@ -163,29 +113,33 @@ let nomes=JSON.parse(localStorage.getItem("nomes")||"{}");
 let pres=JSON.parse(localStorage.getItem("pres")||"{}");
 let roles=JSON.parse(localStorage.getItem("roles")||"{}");
 
+// INICIALIZA NOMES
 if(Object.keys(nomes).length===0){
 for(let i=1;i<=25;i++) nomes[i]="Caixa "+i;
 }
 
-// FUNÇÕES
+// SALVAR
 function salvar(){
 localStorage.setItem("nomes",JSON.stringify(nomes));
 localStorage.setItem("pres",JSON.stringify(pres));
 localStorage.setItem("roles",JSON.stringify(roles));
 }
 
+// PRESENÇA
 function toggle(n){
 pres[n]=!pres[n];
 salvar();
 render();
 }
 
+// TROCAR FUNÇÃO
 function trocar(nome){
 roles[nome]=roles[nome]==="ZAC"?"Operador":"ZAC";
 salvar();
 render();
 }
 
+// RENDER
 function render(){
 let el=document.getElementById("painel");
 el.innerHTML="";
@@ -241,9 +195,13 @@ el.appendChild(card);
 
 // NOMES
 function carregar(){
-let lista=document.getElementById("nomes").value.split("\\n");
+let lista=document.getElementById("nomes").value.split("\n");
 nomes={};
-lista.forEach((n,i)=>{if(n.trim()) nomes[i+1]=n.trim();});
+
+lista.forEach((n,i)=>{
+if(n.trim()) nomes[i+1]=n.trim();
+});
+
 salvar();
 render();
 }
@@ -252,10 +210,10 @@ render();
 function exportar(){
 let data=btoa(JSON.stringify({nomes,pres,roles}));
 let link=location.origin+location.pathname+"?data="+data;
-prompt("Compartilhe:",link);
+prompt("Copie o link:",link);
 }
 
-// IMPORTAR
+// IMPORTAR AUTOMÁTICO
 function importar(){
 let param=new URLSearchParams(window.location.search).get("data");
 if(param){
@@ -267,7 +225,10 @@ salvar();
 }
 }
 
-window.onload=importar;
+window.onload=()=>{
+importar();
+render();
+};
 </script>
 
 </body>
