@@ -14,18 +14,19 @@ header{text-align:center;padding:15px;background:#1e293b}
 
 textarea{
 width:100%;
-height:60px;
+height:80px;
 border-radius:10px;
-padding:8px;
+padding:10px;
 border:none;
+font-size:14px;
 }
 
 button{
 width:100%;
-padding:10px;
-margin-top:5px;
+padding:12px;
+margin-top:6px;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#3b82f6;
 color:#fff;
 font-size:14px;
@@ -67,9 +68,9 @@ margin-top:8px;
 padding:12px;
 border-radius:10px;
 font-size:14px;
-cursor:pointer;
 display:flex;
 flex-direction:column;
+cursor:pointer;
 }
 
 .pix{background:#22c55e}
@@ -77,11 +78,9 @@ flex-direction:column;
 .apoio{background:#ef4444}
 .presente{background:#3b82f6!important}
 
-.role{font-size:11px}
+.role{font-size:11px;margin-top:3px}
 
-@media(min-width:768px){
-.container{grid-template-columns:1fr 1fr}
-}
+.qr{margin-top:10px;text-align:center}
 </style>
 </head>
 
@@ -90,17 +89,20 @@ flex-direction:column;
 <header>📊 Painel de Caixas</header>
 
 <div class="topo">
-<textarea id="nomes" placeholder="Cole nomes (1 por linha)"></textarea>
+<textarea id="nomes" placeholder="Cole os nomes (um por linha)"></textarea>
 
 <button onclick="carregar()">Aplicar nomes</button>
-
 <button onclick="exportar()">📤 Compartilhar</button>
+<button onclick="limparNomes()" style="background:#ef4444">🧹 Limpar nomes</button>
+
+<div class="qr" id="qr"></div>
 </div>
 
 <div class="container" id="painel"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script>
-// ESCALA + INTERVALOS
 const escala={
 "Quinta":{i:"16:10",pix:[1,2],c1:[3,4],c2:[5,6],a:[7,8,9,10]},
 "Sexta":{i:"11:00",pix:[11,12],c1:[13,14],c2:[15,16],a:[17,18,19,20]},
@@ -108,80 +110,49 @@ const escala={
 "Domingo":{i:"17:20",pix:[6,7],c1:[8,9],c2:[10,11],a:[12,13,14,15,16,17]}
 };
 
-// DADOS
 let nomes=JSON.parse(localStorage.getItem("nomes")||"{}");
 let pres=JSON.parse(localStorage.getItem("pres")||"{}");
 let roles=JSON.parse(localStorage.getItem("roles")||"{}");
 
-// INICIALIZA NOMES
 if(Object.keys(nomes).length===0){
 for(let i=1;i<=25;i++) nomes[i]="Caixa "+i;
 }
 
-// SALVAR
 function salvar(){
 localStorage.setItem("nomes",JSON.stringify(nomes));
 localStorage.setItem("pres",JSON.stringify(pres));
 localStorage.setItem("roles",JSON.stringify(roles));
 }
 
-// PRESENÇA
-function toggle(n){
-pres[n]=!pres[n];
-salvar();
-render();
-}
+function toggle(n){ pres[n]=!pres[n]; salvar(); render(); }
+function trocar(nome){ roles[nome]=roles[nome]==="ZAC"?"Operador":"ZAC"; salvar(); render(); }
 
-// TROCAR FUNÇÃO
-function trocar(nome){
-roles[nome]=roles[nome]==="ZAC"?"Operador":"ZAC";
-salvar();
-render();
-}
-
-// RENDER
 function render(){
-let el=document.getElementById("painel");
-el.innerHTML="";
+let el=document.getElementById("painel"); el.innerHTML="";
 
 Object.keys(escala).forEach(dia=>{
-let d=escala[dia];
+let d=escala[dia]; let card=document.createElement("div"); card.className="card";
 
-let card=document.createElement("div");
-card.className="card";
-
-card.innerHTML=`
-<b>${dia}</b>
-<div class="intervalo">⏱ ${d.i}</div>
-`;
+card.innerHTML=`<b>${dia}</b><div class="intervalo">⏱ ${d.i}</div>`;
 
 function sec(t,l,cls){
-let s=document.createElement("div");
-s.innerHTML="<small>"+t+"</small>";
-
-let r=document.createElement("div");
-r.className="row";
+let s=document.createElement("div"); s.innerHTML="<small>"+t+"</small>"; let r=document.createElement("div"); r.className="row";
 
 l.forEach((n,i)=>{
 let nm=nomes[n]||"Caixa "+n;
-
 if(!roles[nm]) roles[nm]=i%2==0?"Operador":"ZAC";
 
 let div=document.createElement("div");
 div.className="caixa "+cls;
-
 if(pres[n]) div.classList.add("presente");
-
 div.innerHTML=`${nm}<span class="role">${roles[nm]}</span>`;
-
 div.onclick=()=>toggle(n);
 div.ondblclick=()=>trocar(nm);
 
 r.appendChild(div);
 });
 
-s.appendChild(r);
-return s;
+s.appendChild(r); return s;
 }
 
 card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
@@ -191,44 +162,47 @@ card.appendChild(sec("Apoio",d.a,"apoio"));
 
 el.appendChild(card);
 });
+
+gerarLinkEquipe();
 }
 
-// NOMES
 function carregar(){
-let lista=document.getElementById("nomes").value.split("\n");
-nomes={};
+let texto=document.getElementById("nomes").value;
+let lista=texto.split("\n").map(n=>n.trim()).filter(n=>n!=="");
 
-lista.forEach((n,i)=>{
-if(n.trim()) nomes[i+1]=n.trim();
-});
+if(lista.length===0){ alert("Digite pelo menos um nome"); return; }
+if(lista.length>25){ alert("Máximo de 25 nomes. Os extras serão ignorados."); }
 
-salvar();
-render();
+nomes={}; lista.slice(0,25).forEach((nome,i)=>{ nomes[i+1]=nome; });
+
+roles={}; salvar(); render(); alert("Nomes carregados com sucesso!");
 }
 
-// COMPARTILHAR
-function exportar(){
+// LIMPAR NOMES
+function limparNomes(){
+if(!confirm("Tem certeza que deseja limpar todos os nomes?")) return;
+
+nomes={}; roles={}; pres={};
+for(let i=1;i<=25;i++){ nomes[i]="Caixa "+i; }
+document.getElementById("nomes").value="";
+salvar(); render(); alert("Nomes resetados!");
+}
+
+// EXPORTAR LINK + QR
+function exportar(){ alert("Link gerado automaticamente abaixo em QR Code"); gerarLinkEquipe(); }
+
+function gerarLinkEquipe(){
 let data=btoa(JSON.stringify({nomes,pres,roles}));
-let link=location.origin+location.pathname+"?data="+data;
-prompt("Copie o link:",link);
+let link=location.origin+location.pathname.replace("index.html","viewer.html")+"?data="+data;
+
+document.getElementById("qr").innerHTML="";
+QRCode.toCanvas(document.getElementById("qr"), link, {width:200});
+document.getElementById("qr").appendChild(document.createElement("br"));
+let a=document.createElement("a"); a.href=link; a.target="_blank"; a.innerText="Abrir link da equipe"; a.style.color="#3b82f6"; a.style.display="block"; a.style.marginTop="6px";
+document.getElementById("qr").appendChild(a);
 }
 
-// IMPORTAR AUTOMÁTICO
-function importar(){
-let param=new URLSearchParams(window.location.search).get("data");
-if(param){
-let data=JSON.parse(atob(param));
-nomes=data.nomes||nomes;
-pres=data.pres||pres;
-roles=data.roles||roles;
-salvar();
-}
-}
-
-window.onload=()=>{
-importar();
-render();
-};
+window.onload=render;
 </script>
 
 </body>
