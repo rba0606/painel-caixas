@@ -7,11 +7,8 @@
 
 <style>
 body{font-family:Arial;background:#020617;color:#fff;margin:0}
-
 header{text-align:center;padding:15px;background:#1e293b}
-
 .topo{padding:10px}
-
 textarea{
 width:100%;
 height:80px;
@@ -20,7 +17,6 @@ padding:10px;
 border:none;
 font-size:14px;
 }
-
 button{
 width:100%;
 padding:12px;
@@ -32,21 +28,19 @@ color:#fff;
 font-size:14px;
 cursor:pointer;
 }
-
+button:hover{background:#2563eb}
 .container{
 display:grid;
 grid-template-columns:1fr;
 gap:12px;
 padding:10px;
 }
-
 .card{
 background:#1e293b;
 padding:12px;
 border-radius:12px;
 position:relative;
 }
-
 .intervalo{
 position:absolute;
 top:10px;
@@ -56,14 +50,12 @@ padding:4px 8px;
 border-radius:8px;
 font-size:12px;
 }
-
 .row{
 display:flex;
 flex-wrap:wrap;
 gap:8px;
 margin-top:8px;
 }
-
 .caixa{
 padding:12px;
 border-radius:10px;
@@ -72,15 +64,19 @@ display:flex;
 flex-direction:column;
 cursor:pointer;
 }
-
 .pix{background:#22c55e}
 .cartao{background:#f59e0b}
 .apoio{background:#ef4444}
 .presente{background:#3b82f6!important}
-
 .role{font-size:11px;margin-top:3px}
-
-.qr{margin-top:10px;text-align:center}
+.linkEquipe{
+margin-top:10px;
+display:block;
+color:#3b82f6;
+text-align:center;
+font-weight:bold;
+text-decoration:none;
+}
 </style>
 </head>
 
@@ -92,15 +88,13 @@ cursor:pointer;
 <textarea id="nomes" placeholder="Cole os nomes (um por linha)"></textarea>
 
 <button onclick="carregar()">Aplicar nomes</button>
-<button onclick="exportar()">📤 Compartilhar</button>
+<button onclick="gerarLinkEquipe()">📤 Gerar link para a equipe</button>
 <button onclick="limparNomes()" style="background:#ef4444">🧹 Limpar nomes</button>
 
-<div class="qr" id="qr"></div>
+<div id="linkContainer"></div>
 </div>
 
 <div class="container" id="painel"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
 const escala={
@@ -114,92 +108,107 @@ let nomes=JSON.parse(localStorage.getItem("nomes")||"{}");
 let pres=JSON.parse(localStorage.getItem("pres")||"{}");
 let roles=JSON.parse(localStorage.getItem("roles")||"{}");
 
+// Inicializa nomes padrão
 if(Object.keys(nomes).length===0){
-for(let i=1;i<=25;i++) nomes[i]="Caixa "+i;
+  for(let i=1;i<=25;i++) nomes[i]="Caixa "+i;
 }
 
 function salvar(){
-localStorage.setItem("nomes",JSON.stringify(nomes));
-localStorage.setItem("pres",JSON.stringify(pres));
-localStorage.setItem("roles",JSON.stringify(roles));
+  localStorage.setItem("nomes",JSON.stringify(nomes));
+  localStorage.setItem("pres",JSON.stringify(pres));
+  localStorage.setItem("roles",JSON.stringify(roles));
 }
 
-function toggle(n){ pres[n]=!pres[n]; salvar(); render(); }
-function trocar(nome){ roles[nome]=roles[nome]==="ZAC"?"Operador":"ZAC"; salvar(); render(); }
+// Marca presença
+function toggle(n){ 
+  pres[n]=!pres[n]; 
+  salvar(); 
+  render(); 
+}
+
+// Troca função Operador/ZAC
+function trocar(nome){ 
+  roles[nome]=roles[nome]==="ZAC"?"Operador":"ZAC"; 
+  salvar(); 
+  render(); 
+}
 
 function render(){
-let el=document.getElementById("painel"); el.innerHTML="";
+  let el=document.getElementById("painel"); el.innerHTML="";
 
-Object.keys(escala).forEach(dia=>{
-let d=escala[dia]; let card=document.createElement("div"); card.className="card";
+  Object.keys(escala).forEach(dia=>{
+    let d=escala[dia]; 
+    let card=document.createElement("div"); card.className="card";
 
-card.innerHTML=`<b>${dia}</b><div class="intervalo">⏱ ${d.i}</div>`;
+    card.innerHTML=`<b>${dia}</b><div class="intervalo">⏱ ${d.i}</div>`;
 
-function sec(t,l,cls){
-let s=document.createElement("div"); s.innerHTML="<small>"+t+"</small>"; let r=document.createElement("div"); r.className="row";
+    function sec(t,l,cls){
+      let s=document.createElement("div"); s.innerHTML="<small>"+t+"</small>"; 
+      let r=document.createElement("div"); r.className="row";
 
-l.forEach((n,i)=>{
-let nm=nomes[n]||"Caixa "+n;
-if(!roles[nm]) roles[nm]=i%2==0?"Operador":"ZAC";
+      l.forEach((n,i)=>{
+        let nm=nomes[n]||"Caixa "+n;
+        if(!roles[nm]) roles[nm]=i%2==0?"Operador":"ZAC";
 
-let div=document.createElement("div");
-div.className="caixa "+cls;
-if(pres[n]) div.classList.add("presente");
-div.innerHTML=`${nm}<span class="role">${roles[nm]}</span>`;
-div.onclick=()=>toggle(n);
-div.ondblclick=()=>trocar(nm);
+        let div=document.createElement("div");
+        div.className="caixa "+cls;
+        if(pres[n]) div.classList.add("presente");
+        div.innerHTML=`${nm}<span class="role">${roles[nm]}</span>`;
 
-r.appendChild(div);
-});
+        div.onclick=()=>toggle(n);
+        div.ondblclick=()=>trocar(nm);
 
-s.appendChild(r); return s;
-}
+        // Clique direito para editar nome
+        div.oncontextmenu=(e)=>{
+          e.preventDefault();
+          let novo=prompt("Editar nome:", nm);
+          if(novo){ nomes[n]=novo; salvar(); render(); }
+        };
 
-card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
-card.appendChild(sec("Cartão 1",d.c1,"cartao"));
-card.appendChild(sec("Cartão 2",d.c2,"cartao"));
-card.appendChild(sec("Apoio",d.a,"apoio"));
+        r.appendChild(div);
+      });
 
-el.appendChild(card);
-});
+      s.appendChild(r); return s;
+    }
 
-gerarLinkEquipe();
+    card.appendChild(sec("PIX/Dinheiro",d.pix,"pix"));
+    card.appendChild(sec("Cartão 1",d.c1,"cartao"));
+    card.appendChild(sec("Cartão 2",d.c2,"cartao"));
+    card.appendChild(sec("Apoio",d.a,"apoio"));
+
+    el.appendChild(card);
+  });
 }
 
 function carregar(){
-let texto=document.getElementById("nomes").value;
-let lista=texto.split("\n").map(n=>n.trim()).filter(n=>n!=="");
+  let texto=document.getElementById("nomes").value;
+  let lista=texto.split("\n").map(n=>n.trim()).filter(n=>n!=="");
 
-if(lista.length===0){ alert("Digite pelo menos um nome"); return; }
-if(lista.length>25){ alert("Máximo de 25 nomes. Os extras serão ignorados."); }
+  if(lista.length===0){ alert("Digite pelo menos um nome"); return; }
+  if(lista.length>25){ alert("Máximo de 25 nomes. Os extras serão ignorados."); }
 
-nomes={}; lista.slice(0,25).forEach((nome,i)=>{ nomes[i+1]=nome; });
-
-roles={}; salvar(); render(); alert("Nomes carregados com sucesso!");
+  nomes={}; lista.slice(0,25).forEach((nome,i)=>{ nomes[i+1]=nome; });
+  roles={}; salvar(); render(); alert("Nomes carregados com sucesso!");
 }
 
-// LIMPAR NOMES
+// Limpar nomes
 function limparNomes(){
-if(!confirm("Tem certeza que deseja limpar todos os nomes?")) return;
+  if(!confirm("Tem certeza que deseja limpar todos os nomes?")) return;
 
-nomes={}; roles={}; pres={};
-for(let i=1;i<=25;i++){ nomes[i]="Caixa "+i; }
-document.getElementById("nomes").value="";
-salvar(); render(); alert("Nomes resetados!");
+  nomes={}; roles={}; pres={};
+  for(let i=1;i<=25;i++){ nomes[i]="Caixa "+i; }
+  document.getElementById("nomes").value="";
+  salvar(); render(); alert("Nomes resetados!");
 }
 
-// EXPORTAR LINK + QR
-function exportar(){ alert("Link gerado automaticamente abaixo em QR Code"); gerarLinkEquipe(); }
-
+// Gerar link para a equipe
 function gerarLinkEquipe(){
-let data=btoa(JSON.stringify({nomes,pres,roles}));
-let link=location.origin+location.pathname.replace("index.html","viewer.html")+"?data="+data;
+  let data=btoa(JSON.stringify({nomes,pres,roles}));
+  let viewerPath = location.origin + location.pathname.replace(/index\.html$/,"viewer.html");
+  let link = viewerPath + "?data=" + data;
 
-document.getElementById("qr").innerHTML="";
-QRCode.toCanvas(document.getElementById("qr"), link, {width:200});
-document.getElementById("qr").appendChild(document.createElement("br"));
-let a=document.createElement("a"); a.href=link; a.target="_blank"; a.innerText="Abrir link da equipe"; a.style.color="#3b82f6"; a.style.display="block"; a.style.marginTop="6px";
-document.getElementById("qr").appendChild(a);
+  let container=document.getElementById("linkContainer");
+  container.innerHTML=`<a href="${link}" target="_blank" class="linkEquipe">Abrir link da equipe</a>`;
 }
 
 window.onload=render;
