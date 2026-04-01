@@ -1,506 +1,270 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Escala Caixas - Retiro Semana Santa</title>
-<style>
-:root {
-  --bg: #f4f7ff;
-  --card: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --primary: #2563eb;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --warning: #f59e0b;
-  --shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-}
-* { box-sizing: border-box; }
-body { margin: 0; font-family: "Inter", Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
-header {
-  background: url('fundo-semana-santa.jpg') center/cover no-repeat;
-  color: #ffffff;
-  text-align: center;
-  padding: 50px 16px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  position: relative;
-}
-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  z-index: 0;
-}
-header > * { position: relative; z-index: 1; }
-.main { max-width: 1100px; margin: 18px auto 30px; padding: 0 14px; }
-.card-header { margin-bottom: 28px; }
-.intervalo { background: #f1f5f9; color: #334155; padding: 4px 8px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; }
-.turno-balao { position: relative; z-index: 1; }
-.panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
-.panel label { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; display: block; }
-.panel input, .panel select, .panel button { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: var(--text); padding: 10px 10px; font-size: 0.95rem; }
-.panel input:focus, .panel select:focus, .panel button:focus { outline: 2px solid #93c5fd; }
-.panel button { border: 0; color: #fff; cursor: pointer; font-weight: 600; }
-.btn-primary { background: var(--primary); }
-.btn-success { background: var(--success); }
-.btn-danger { background: var(--danger); }
-.btn-warning { background: var(--warning); }
-.btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.container { display: grid; gap: 14px; }
-.card { background: var(--card); padding: 14px; border-radius: 14px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
-.card.quinta { background: #eff6ff; }
-.card.sexta { background: #f0fdf4; }
-.card.sabado { background: #fef9c3; }
-.card.domingo { background: #fef2f2; }
-.card-header { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 12px; }
-.card-header b { font-size: 1rem; }
-.intervalo { font-size: 0.78rem; background: #f1f5f9; padding: 3px 8px; border-radius: 8px; color: #334155; font-weight: 600; }
-.turno-balao { background: #f1f5f9; color: #1e293b; margin: 0 auto 10px; display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; text-align: center; box-shadow: 0 3px 8px rgba(15,23,42,.08); }
-.turno-balao.reservado { background: #dbeafe; color: #1e3a8a; border: 1px solid #93c5fd; }
-.text-center { display: block; margin: 0 auto 10px; }
-.row { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 8px; }
-.caixa { position: relative; border-radius: 10px; background: #f8fafc; padding: 10px 10px 8px 10px; border: 1px solid #cbd5e1; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.caixa:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(15,23,42,.12); }
-.caixa .nome { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
-.caixa .meta { display: flex; justify-content: space-between; align-items: center; }
-.caixa .role { font-size: 0.75rem; color: #475569; }
-.caixa .badge { font-size: 0.72rem; font-weight: 600; color: #64748b; background: #e2e8f0; border-radius: 8px; padding: 2px 6px; }
-.caixa .edit-btn { border: 0; background: transparent; color: #2563eb; font-size: 0.82rem; cursor: pointer; text-decoration: underline; padding: 1px 2px; }
-.caixa.presente { border-color: #16a34a; background: #dcfce7; }
-.caixa.ausente { border-color: #e11d48; background: #fee2e2; }
-.info { margin-top: 5px; font-size: 0.8rem; color: var(--muted); }
-.qr-area { margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.qr-area a { color: #2563eb; word-break: break-all; text-decoration: none; }
-.actions { display: flex; gap: 10px; justify-content: center; margin: 10px 0; flex-wrap: wrap; }
-@media (max-width: 640px) {
-  body { font-size: 14px; }
-  header { font-size: 1rem; padding: 12px 10px; }
-  .main { padding: 0 10px; }
-  .card { padding: 10px; border-radius: 12px; }
-  .card-header { flex-direction: column; align-items: flex-start; gap: 5px; }
-  .intervalo { position: static; margin-top: 4px; }
-  .panel { grid-template-columns: 1fr; gap: 8px; }
-  .panel input, .panel select, .panel button { font-size: 1rem; padding: 12px 10px; }
-  .panel select { appearance: none; -webkit-appearance: none; background-color: #fff; background-image: linear-gradient(45deg, transparent 50%, #334155 50%), linear-gradient(-45deg, transparent 50%, #334155 50%); background-position: calc(100% - 16px) center, calc(100% - 12px) center; background-size: 8px 8px; background-repeat: no-repeat; }
-  .turno-balao { padding: 3px 8px; font-size: 0.7rem; }
-  .info { font-size: 0.75rem; }
-  .row { grid-template-columns: 1fr; gap: 7px; }
-  .caixa { min-height: 62px; padding: 10px; }
-  .caixa .nome { font-size: 0.9rem; }
-  .caixa .meta { gap: 6px; }
-  .caixa .badge { font-size: 0.68rem; padding: 1px 5px; }
-  .caixa .edit-btn { font-size: 0.76rem; }
-  .actions { flex-direction: column; align-items: stretch; gap: 8px; }
-  .actions button { width: 100%; }
-  .qr-area { flex-direction: column; align-items: stretch; }
-  .qr-area a { font-size: 0.82rem; word-break: break-word; }
-  .qr-area canvas { width: 100px !important; height: auto; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala Caixas - Retiro Semana Santa</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; }
+        
+        header {
+            background: #1e293b;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+        }
+
+        .main { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+
+        .status-bar {
+            background: #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid #cbd5e1;
+        }
+
+        .card.quinta { border-left-color: #3b82f6; }
+        .card.sexta { border-left-color: #10b981; }
+        .card.sabado { border-left-color: #f59e0b; }
+        .card.domingo { border-left-color: #ef4444; }
+
+        .dia-titulo { font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        
+        .turno-bloco {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .hora-badge {
+            display: inline-block;
+            background: #334155;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+        }
+
+        .grid-caixas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .caixa-item {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        .caixa-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: bold; }
+        .caixa-nome { font-size: 0.9rem; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .caixa-vago { color: #cbd5e1; font-style: italic; }
+
+        /* Cadastro */
+        .form-cadastro {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #bfdbfe;
+        }
+        .form-cadastro input, .form-cadastro select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+        .btn-salvar {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (max-width: 480px) {
+            .grid-caixas { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-<header>📊 Escala Caixas - Retiro Semana Santa</header>
+
+<header>📊 Escala de Caixas</header>
+
 <main class="main">
-  <div class="info"></div>
+    <div class="status-bar" id="status">Sincronizando com a nuvem...</div>
 
-  <div class="card" style="border-color:#cbd5e1; background:#eef2ff;">
-    <div class="card-header"><b>Cadastro de horário pessoal</b></div>
-    <div class="panel" style="grid-template-columns: repeat(4, 1fr); gap: 10px;">
-      <div>
-        <label for="nomeDisponibilidade">Seu nome</label>
-        <input type="text" id="nomeDisponibilidade" placeholder="Ex: João" />
-      </div>
-      <div>
-        <label for="diaDisponibilidade">Dia</label>
-        <select id="diaDisponibilidade">
-          <option value="">Selecione</option>
-          <option value="Quinta">Quinta</option>
-          <option value="Sexta">Sexta</option>
-          <option value="Sábado">Sábado</option>
-          <option value="Domingo">Domingo</option>
-        </select>
-      </div>
-      <div>
-        <label for="horaDisponibilidade">Hora</label>
-        <select id="horaDisponibilidade">
-          <option value="">Selecione</option>
-          <option value="08:45-09:45">08:45-09:45</option>
-          <option value="09:45-10:45">09:45-10:45</option>
-          <option value="10:45-11:45">10:45-11:45</option>
-          <option value="11:45-12:30">11:45-12:30</option>
-          <option value="13:30-14:30">13:30-14:30</option>
-          <option value="14:30-15:30">14:30-15:30</option>
-          <option value="15:30-16:30">15:30-16:30</option>
-          <option value="16:30-17:30">16:30-17:30</option>
-          <option value="13:45-14:45">13:45-14:45</option>
-          <option value="14:45-15:45">14:45-15:45</option>
-          <option value="15:45-16:45">15:45-16:45</option>
-          <option value="16:45-17:50">16:45-17:50</option>
-        </select>
-      </div>
-      <div style="align-self: end;">
-        <button class="btn-success" onclick="adicionarDisponibilidade()">💾 Salvar horário</button>
-      </div>
+    <div class="form-cadastro">
+        <strong style="display:block; margin-bottom:10px;">✍️ Reservar meu Horário</strong>
+        <input type="text" id="nomeInput" placeholder="Seu nome completo">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <select id="diaSelect" onchange="atualizarHoras()">
+                <option value="">Dia...</option>
+                <option value="Quinta">Quinta</option>
+                <option value="Sexta">Sexta</option>
+                <option value="Sábado">Sábado</option>
+                <option value="Domingo">Domingo</option>
+            </select>
+            <select id="horaSelect">
+                <option value="">Hora...</option>
+            </select>
+        </div>
+        <button class="btn-salvar" onclick="cadastrarHorario()">💾 Confirmar Horário</button>
     </div>
-    <div id="disponibilidadeList" class="info" style="margin-top: 8px;"></div>
-  </div>
 
-  <div class="container" id="painel"></div>
-
-  <div class="actions">
-    <button class="btn-danger" onclick="limparNomes()">🧹 Limpar nomes</button>
-  </div>
+    <div id="painel"></div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
-const escala = {
-  Quinta: { i: '13:30 - 17:30', horas: ['13:30-14:30','14:30-15:30','15:30-16:30','16:30-17:30'], pix: [1,3,5,7], cartao: [2,4,6,8] },
-  Sexta:  { i: '08:45 - 12:30', horas: ['08:45-09:45','09:45-10:45','10:45-11:45','11:45-12:30'], pix: [9,11,13,15], cartao: [10,12,14,16] },
-  Sábado: { i: '08:45 - 12:30', horas: ['08:45-09:45','09:45-10:45','10:45-11:45','11:45-12:30'], pix: [17,19,21,23], cartao: [18,20,22,24] },
-  Domingo:{ i: '13:45 - 17:50', horas: ['13:45-14:45','14:45-15:45','15:45-16:45','16:45-17:50'], pix: [25,27,29,31], cartao: [26,28,30,32] }
-};
+    // 🔗 COLOQUE A URL DO SEU GOOGLE APPS SCRIPT AQUI:
+    const API_URL = "https://script.google.com/macros/s/AKfycbxFQYiwFFsVbvCb7Ba28mKxVjcwQoWUxbTNWmYyIO-8uEQ2qS6Sov_FK96rrVTIym0flg/exec";
 
-let nomes = JSON.parse(localStorage.getItem('nomes')||'{}');
-let pres = JSON.parse(localStorage.getItem('pres')||'{}');
-let roles = JSON.parse(localStorage.getItem('roles')||'{}');
-let disponibilidade = JSON.parse(localStorage.getItem('disponibilidade')||'{}');
+    const escala = {
+        Quinta:  { label: 'QUINTA', h: ['13:30-14:30','14:30-15:30','15:30-16:30','16:30-17:30'], pix: [1,3,5,7], crt: [2,4,6,8], css: 'quinta' },
+        Sexta:   { label: 'SEXTA',  h: ['08:45-09:45','09:45-10:45','10:45-11:45','11:45-12:30'], pix: [9,11,13,15], crt: [10,12,14,16], css: 'sexta' },
+        Sábado:  { label: 'SÁBADO', h: ['08:45-09:45','09:45-10:45','10:45-11:45','11:45-12:30'], pix: [17,19,21,23], crt: [18,20,22,24], css: 'sabado' },
+        Domingo: { label: 'DOMIN.', h: ['13:45-14:45','14:45-15:45','15:45-16:45','16:45-17:50'], pix: [25,27,29,31], crt: [26,28,30,32], css: 'domingo' }
+    };
 
-if(Object.keys(nomes).length === 0){
-  for(let i=1;i<=32;i++) nomes[i] = 'Caixa '+i;
-}
+    let nomesDB = {};
 
-function salvar(){
-  localStorage.setItem('disponibilidade', JSON.stringify(disponibilidade));
-  localStorage.setItem('nomes', JSON.stringify(nomes));
-  localStorage.setItem('pres', JSON.stringify(pres));
-  localStorage.setItem('roles', JSON.stringify(roles));
-}
-
-function toggle(n){
-  pres[n] = !pres[n];
-  salvar(); render();
-}
-
-function trocar(pos){
-  roles[pos] = roles[pos] === 'ZAC' ? 'Operador' : 'ZAC';
-  salvar(); render();
-}
-
-function editarNome(pos){
-  const atual = nomes[pos] || 'Caixa '+pos;
-  const novo = prompt('Defina o nome para esta função / posição:', atual);
-  if(novo !== null){
-    const txt = novo.trim();
-    if(txt){ nomes[pos] = txt; salvar(); render(); }
-  }
-}
-
-function getHorariosPreenchidos(){
-  const m = {};
-
-  Object.keys(escala).forEach(dia => {
-    const d = escala[dia];
-    d.horas.forEach((hora, i) => {
-      const key = `${dia}|${hora}`;
-      const pixPos = d.pix[i];
-      const cartaoPos = d.cartao[i];
-      const isOcupado = (pos) => {
-        const nome = nomes[pos] || `Caixa ${pos}`;
-        return nome.trim() !== `Caixa ${pos}`;
-      };
-      let count = 0;
-      if(isOcupado(pixPos)) count++;
-      if(isOcupado(cartaoPos)) count++;
-      m[key] = count;
-    });
-  });
-
-  return m;
-}
-
-function getNomesAlocados(){
-  return new Set(Object.values(nomes).filter(nome => nome && !nome.startsWith('Caixa ')));
-}
-
-function isDiaCompleto(dia){
-  if(!escala[dia]) return false;
-  const horasDaEscala = escala[dia].horas;
-  const horariosPreenchidos = getHorariosPreenchidos();
-  return horasDaEscala.every(hora => (horariosPreenchidos[`${dia}|${hora}`] || 0) >= 2);
-}
-
-function diaClass(dia){
-  return dia.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-}
-
-function atualizarHorasDisponiveis(){
-  const diaSelect = document.getElementById('diaDisponibilidade');
-  const horaSelect = document.getElementById('horaDisponibilidade');
-  const selectedDia = diaSelect.value;
-
-  diaSelect.innerHTML = '<option value="">Selecione</option>';
-  Object.keys(escala).forEach(d => {
-    if(!isDiaCompleto(d)){
-      const option = document.createElement('option');
-      option.value = d;
-      option.textContent = d;
-      diaSelect.appendChild(option);
-    }
-  });
-
-  if(selectedDia && escala[selectedDia] && !isDiaCompleto(selectedDia)) {
-    diaSelect.value = selectedDia;
-  } else {
-    diaSelect.value = '';
-  }
-
-  horaSelect.innerHTML = '<option value="">Selecione</option>';
-  const dia = diaSelect.value;
-  if(!dia || !escala[dia]) return;
-
-  escala[dia].horas.forEach(hora => {
-    const option = document.createElement('option');
-    option.value = hora;
-    option.textContent = hora;
-    horaSelect.appendChild(option);
-  });
-}
-
-function marcarNomeNaEscala(dia, hora, nome){
-  const d = escala[dia];
-  if(!d) return null;
-
-  const idx = d.horas.indexOf(hora);
-  if(idx === -1) return null;
-
-  const pixPos = d.pix[idx];
-  const cartaoPos = d.cartao[idx];
-
-  const defaultLabel = (i) => `Caixa ${i}`;
-  const isLivre = (pos) => {
-    return !pres[pos] || nomes[pos] === defaultLabel(pos) || !nomes[pos];
-  };
-
-  let pos = null;
-  if(isLivre(pixPos)) pos = pixPos;
-  else if(isLivre(cartaoPos)) pos = cartaoPos;
-
-  if(!pos) return null;
-
-  nomes[pos] = nome;
-  pres[pos] = true;
-
-  return pos;
-}
-
-function render(){
-  const el = document.getElementById('painel'); el.innerHTML = '';
-  const busca = '';
-  const horariosPreenchidos = getHorariosPreenchidos();
-
-  Object.keys(escala).forEach(dia => {
-    const d = escala[dia];
-    const card = document.createElement('div'); card.className = 'card ' + diaClass(dia);
-    const header = document.createElement('div'); header.className = 'card-header';
-    header.innerHTML = `<b>${dia}</b><span class='intervalo'>⏱ ${d.i}</span>`;
-    card.appendChild(header);
-
-    function secDupla(dia, hora, pixId, cartaoId){
-      const base = document.createElement('div');
-      base.style.marginBottom = '10px';
-      const label = document.createElement('div'); label.className = 'turno-balao text-center';
-      const key = `${dia}|${hora}`;
-      const count = horariosPreenchidos[key] || 0;
-      if(count > 0){
-        label.classList.add('reservado');
-        label.innerText = `Turno: ${hora} • preenchido (${count})`;
-      } else {
-        label.innerText = `Turno: ${hora}`;
-      }
-      const r = document.createElement('div'); r.className = 'row';
-
-      [[pixId, 'PIX/Dinheiro'], [cartaoId, 'Cartão']].forEach(([n,setor])=>{
-        const nm = nomes[n] || 'Caixa '+n;
-        const div = document.createElement('div');
-        const presente = !!pres[n];
-        div.className = 'caixa ' + (presente ? 'presente' : '');
-        div.innerHTML = `
-          <div class='nome'>${nm}</div>
-          <div style='font-size:0.78rem;color:#94a3b8'>${setor}</div>
-          <div class='meta'>
-            <span class='badge'>#${n}</span>
-            <button class='edit-btn' onclick='event.stopPropagation(); editarNome(${n})'>✎</button>
-          </div>`;
-        div.onclick = () => toggle(n);
-        div.oncontextmenu = (e) => { e.preventDefault(); editarNome(n); };
-        r.appendChild(div);
-      });
-
-      base.appendChild(label); base.appendChild(r);
-      card.appendChild(base);
+    async function loadData() {
+        document.getElementById('status').innerText = "🔄 Atualizando...";
+        try {
+            const response = await fetch(API_URL);
+            nomesDB = await response.json();
+            render();
+            document.getElementById('status').innerText = "✅ Sincronizado agora";
+        } catch (e) {
+            document.getElementById('status').innerText = "⚠️ Erro de conexão";
+        }
     }
 
-    d.horas.forEach((hora,i)=>{
-      secDupla(dia, hora, d.pix[i], d.cartao[i]);
-    });
+    async function saveData(id, nome) {
+        document.getElementById('status').innerText = "💾 Salvando...";
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Necessário para Google Scripts
+                body: JSON.stringify({ id: id, nome: nome })
+            });
+            // Como no-cors não retorna resposta, aguardamos um pouco e recarregamos
+            setTimeout(loadData, 1500);
+        } catch (e) {
+            alert("Erro ao salvar!");
+        }
+    }
 
-    if(card.querySelector('.row')) el.appendChild(card);
-  });
+    function render() {
+        const painel = document.getElementById('painel');
+        painel.innerHTML = '';
 
-  gerarLinkEquipe();
-  renderDisponibilidade();
-  atualizarHorasDisponiveis();
-}
+        Object.keys(escala).forEach(dia => {
+            const info = escala[dia];
+            let html = `<div class="card ${info.css}">
+                <div class="dia-titulo"><span>${info.label}</span> <small style="font-size:0.7rem; color:var(--muted)">${dia}</small></div>`;
+            
+            info.h.forEach((hora, i) => {
+                const idPix = info.pix[i];
+                const idCrt = info.crt[i];
+                const nPix = nomesDB[idPix] || "";
+                const nCrt = nomesDB[idCrt] || "";
 
-function renderDisponibilidade(){
-  const el = document.getElementById('disponibilidadeList');
-  if(!el) return;
-  el.innerHTML = '';
+                html += `
+                <div class="turno-bloco">
+                    <div class="hora-badge">${hora}</div>
+                    <div class="grid-caixas">
+                        <div class="caixa-item" onclick="manualEdit(${idPix})">
+                            <div class="caixa-label">Caixa 1 (Pix)</div>
+                            <div class="caixa-nome">${nPix || '<span class="caixa-vago">Vago</span>'}</div>
+                        </div>
+                        <div class="caixa-item" onclick="manualEdit(${idCrt})">
+                            <div class="caixa-label">Caixa 2 (Crt)</div>
+                            <div class="caixa-nome">${nCrt || '<span class="caixa-vago">Vago</span>'}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+            painel.innerHTML += html;
+        });
+    }
 
-  const nenhum = document.createElement('div');
-  nenhum.className = 'info';
+    function atualizarHoras() {
+        const dia = document.getElementById('diaSelect').value;
+        const select = document.getElementById('horaSelect');
+        select.innerHTML = '<option value="">Hora...</option>';
+        if(dia && escala[dia]) {
+            escala[dia].h.forEach(h => {
+                select.innerHTML += `<option value="${h}">${h}</option>`;
+            });
+        }
+    }
 
-  const alocados = getNomesAlocados();
-  const pessoas = Object.keys(disponibilidade).filter(nome => !alocados.has(nome));
-  if(pessoas.length === 0){
-    nenhum.innerText = 'Nenhuma disponibilidade cadastrada ainda.';
-    el.appendChild(nenhum);
-    return;
-  }
+    async function cadastrarHorario() {
+        const nome = document.getElementById('nomeInput').value.trim();
+        const dia = document.getElementById('diaSelect').value;
+        const hora = document.getElementById('horaSelect').value;
 
-  pessoas.forEach(nome => {
-    const bloco = document.createElement('div');
-    bloco.style.marginBottom = '8px';
-    bloco.innerHTML = `<strong>${nome}</strong>:`;
+        if(!nome || !dia || !hora) return alert("Preencha todos os campos!");
 
-    const lista = document.createElement('div');
-    lista.style.marginTop = '4px';
-    disponibilidade[nome].forEach((item, idx) => {
-      const itemEl = document.createElement('div');
-      itemEl.style.display = 'inline-flex';
-      itemEl.style.alignItems = 'center';
-      itemEl.style.gap = '6px';
-      itemEl.style.marginBottom = '4px';
-      itemEl.innerHTML = `<span>${item.dia} ${item.hora}</span> <button class='edit-btn' style='padding:2px 6px;' onclick='removerDisponibilidade("${nome}",${idx})'>✕</button>`;
-      lista.appendChild(itemEl);
-    });
+        const info = escala[dia];
+        const idx = info.h.indexOf(hora);
+        const idPix = info.pix[idx];
+        const idCrt = info.crt[idx];
 
-    bloco.appendChild(lista);
-    el.appendChild(bloco);
-  });
-}
+        // Tenta vaga no Pix primeiro, depois Cartão
+        let idAlocar = null;
+        if(!nomesDB[idPix] || nomesDB[idPix].includes("Caixa")) idAlocar = idPix;
+        else if(!nomesDB[idCrt] || nomesDB[idCrt].includes("Caixa")) idAlocar = idCrt;
 
-function adicionarDisponibilidade(){
-  const nome = document.getElementById('nomeDisponibilidade').value.trim();
-  const dia = document.getElementById('diaDisponibilidade').value;
-  const hora = document.getElementById('horaDisponibilidade').value;
+        if(!idAlocar) return alert("Este horário já está completo!");
 
-  if(!nome){ return alert('Informe seu nome para cadastrar horário.'); }
-  if(!dia || !hora){ return alert('Selecione dia e hora.'); }
+        await saveData(idAlocar, nome);
+        document.getElementById('nomeInput').value = '';
+    }
 
-  const alocados = getNomesAlocados();
-  if(alocados.has(nome)){
-    return alert('Nome já alocado no painel (fora dos balões).');
-  }
+    function manualEdit(id) {
+        const novo = prompt("Editar nome para esta posição:", nomesDB[id] || "");
+        if(novo !== null) saveData(id, novo.trim());
+    }
 
-  disponibilidade[nome] = disponibilidade[nome] || [];
-  const existente = disponibilidade[nome].some(item => item.dia === dia && item.hora === hora);
-  if(existente){
-    return alert('Horário já cadastrado para este nome.');
-  }
-
-  const pos = marcarNomeNaEscala(dia, hora, nome);
-  if(!pos){
-    return alert('Não foi possível alocar no painel: horário completo ou inválido.');
-  }
-
-  disponibilidade[nome].push({dia, hora});
-  salvar();
-  render();
-  document.getElementById('nomeDisponibilidade').value = '';
-  document.getElementById('diaDisponibilidade').value = '';
-  atualizarHorasDisponiveis();
-  alert(`Horário salvo automaticamente e alocado no painel (posição #${pos}).`);
-}
-
-function removerDisponibilidade(nome, idx){
-  if(!disponibilidade[nome]) return;
-  disponibilidade[nome].splice(idx, 1);
-  if(disponibilidade[nome].length === 0) delete disponibilidade[nome];
-  salvar();
-  renderDisponibilidade();
-  atualizarHorasDisponiveis();
-}
-
-function limparNomes(){
-  if(!confirm('Tem certeza que deseja limpar todos os nomes?')) return;
-  nomes={}; roles={}; pres={}; disponibilidade={};
-  for(let i=1;i<=32;i++){ nomes[i]='Caixa '+i; }
-  salvar(); render();
-  alert('Nomes resetados!');
-}
-
-function exportar(){
-  alert('Link gerado automaticamente abaixo em QR Code');
-  gerarLinkEquipe();
-}
-
-function gerarLinkEquipe(){
-  const data = btoa(JSON.stringify({nomes,pres,roles}));
-  let targetPath;
-  if(location.pathname.endsWith('index.html')){
-    targetPath = location.pathname.replace(/index\.html$/, 'viewer.html');
-  } else if(location.pathname.endsWith('/')){
-    targetPath = location.pathname + 'viewer.html';
-  } else {
-    targetPath = location.pathname + '/viewer.html';
-  }
-  const link = location.origin + targetPath + '?data=' + data;
-
-  const qr = document.getElementById('qr');
-  qr.innerHTML = '';
-  const canvas = document.createElement('canvas');
-  QRCode.toCanvas(canvas, link, {width:180}, function(error){ if(error) console.error(error); });
-  qr.appendChild(canvas);
-  const a = document.createElement('a'); a.href=link; a.target='_blank'; a.innerText='Abrir link da equipe';
-  qr.appendChild(a);
-}
-
-function gerarCSV(){
-  let linhas = ['Dia,Hora,Setor,Posição,Caixa,Função,Presença'];
-  Object.keys(escala).forEach(dia => {
-    const d = escala[dia];
-    d.horas.forEach((hora,i)=>{
-      [['PIX/Dinheiro',d.pix[i]],['Cartão',d.cartao[i]]].forEach(([setor,n])=>{
-        const nm = nomes[n] || 'Caixa '+n;
-        const presenca = pres[n] ? 'Presente' : 'Ausente';
-        const nmEsc = nm.replace(/"/g, '""');
-        linhas.push(`${dia},${hora},${setor},${i+1},"${nmEsc}",${presenca}`);
-      });
-    });
-  });
-  const csv = linhas.join('\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'escala_caixas.csv';
-  a.style.display='none';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-window.onload = () => {
-  render();
-  const diaSelect = document.getElementById('diaDisponibilidade');
-  diaSelect.addEventListener('change', atualizarHorasDisponiveis);
-  atualizarHorasDisponiveis();
-};
+    // Iniciar
+    loadData();
+    // Auto-refresh a cada 60 segundos
+    setInterval(loadData, 60000);
 </script>
+
 </body>
 </html>
