@@ -129,11 +129,7 @@ header { background: #1e293b; color: #f8fafc; text-align: center; padding: 14px 
 
   <div class="actions">
     <button class="btn-danger" onclick="limparNomes()">🧹 Limpar nomes</button>
-    <button class="btn-warning" onclick="gerarCSV()">📄 Exportar CSV</button>
-    <button class="btn-success" onclick="exportar()">📤 Compartilhar link</button>
   </div>
-
-  <div class="qr-area" id="qr"></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -189,6 +185,77 @@ function getHorariosPreenchidos(){
     });
   });
   return m;
+}
+
+function getNomesAlocados(){
+  return new Set(Object.values(nomes).filter(nome => nome && !nome.startsWith('Caixa ')));
+}
+
+function isDiaCompleto(dia){
+  if(!escala[dia]) return false;
+  const horasDaEscala = escala[dia].horas;
+  const horariosPreenchidos = getHorariosPreenchidos();
+  return horasDaEscala.every(hora => !!horariosPreenchidos[`${dia}|${hora}`]);
+}
+
+function atualizarHorasDisponiveis(){
+  const diaSelect = document.getElementById('diaDisponibilidade');
+  const horaSelect = document.getElementById('horaDisponibilidade');
+  const selectedDia = diaSelect.value;
+
+  diaSelect.innerHTML = '<option value="">Selecione</option>';
+  Object.keys(escala).forEach(d => {
+    if(!isDiaCompleto(d)){
+      const option = document.createElement('option');
+      option.value = d;
+      option.textContent = d;
+      diaSelect.appendChild(option);
+    }
+  });
+
+  if(selectedDia && escala[selectedDia] && !isDiaCompleto(selectedDia)) {
+    diaSelect.value = selectedDia;
+  } else {
+    diaSelect.value = '';
+  }
+
+  horaSelect.innerHTML = '<option value="">Selecione</option>';
+  const dia = diaSelect.value;
+  if(!dia || !escala[dia]) return;
+
+  escala[dia].horas.forEach(hora => {
+    const option = document.createElement('option');
+    option.value = hora;
+    option.textContent = hora;
+    horaSelect.appendChild(option);
+  });
+}
+
+function marcarNomeNaEscala(dia, hora, nome){
+  const d = escala[dia];
+  if(!d) return null;
+
+  const idx = d.horas.indexOf(hora);
+  if(idx === -1) return null;
+
+  const pixPos = d.pix[idx];
+  const cartaoPos = d.cartao[idx];
+
+  const defaultLabel = (i) => `Caixa ${i}`;
+  const isLivre = (pos) => {
+    return !pres[pos] || nomes[pos] === defaultLabel(pos) || !nomes[pos];
+  };
+
+  let pos = null;
+  if(isLivre(pixPos)) pos = pixPos;
+  else if(isLivre(cartaoPos)) pos = cartaoPos;
+
+  if(!pos) return null;
+
+  nomes[pos] = nome;
+  pres[pos] = true;
+
+  return pos;
 }
 
 function render(){
@@ -247,6 +314,7 @@ function render(){
 
   gerarLinkEquipe();
   renderDisponibilidade();
+  atualizarHorasDisponiveis();
 }
 
 function renderDisponibilidade(){
@@ -257,7 +325,8 @@ function renderDisponibilidade(){
   const nenhum = document.createElement('div');
   nenhum.className = 'info';
 
-  const pessoas = Object.keys(disponibilidade);
+  const alocados = getNomesAlocados();
+  const pessoas = Object.keys(disponibilidade).filter(nome => !alocados.has(nome));
   if(pessoas.length === 0){
     nenhum.innerText = 'Nenhuma disponibilidade cadastrada ainda.';
     el.appendChild(nenhum);
@@ -294,17 +363,29 @@ function adicionarDisponibilidade(){
   if(!nome){ return alert('Informe seu nome para cadastrar horário.'); }
   if(!dia || !hora){ return alert('Selecione dia e hora.'); }
 
+  const alocados = getNomesAlocados();
+  if(alocados.has(nome)){
+    return alert('Nome já alocado no painel (fora dos balões).');
+  }
+
   disponibilidade[nome] = disponibilidade[nome] || [];
   const existente = disponibilidade[nome].some(item => item.dia === dia && item.hora === hora);
   if(existente){
     return alert('Horário já cadastrado para este nome.');
   }
 
+  const pos = marcarNomeNaEscala(dia, hora, nome);
+  if(!pos){
+    return alert('Não foi possível alocar no painel: horário completo ou inválido.');
+  }
+
   disponibilidade[nome].push({dia, hora});
   salvar();
-  renderDisponibilidade();
+  render();
   document.getElementById('nomeDisponibilidade').value = '';
-  alert('Horário salvo automaticamente!');
+  document.getElementById('diaDisponibilidade').value = '';
+  atualizarHorasDisponiveis();
+  alert(`Horário salvo automaticamente e alocado no painel (posição #${pos}).`);
 }
 
 function removerDisponibilidade(nome, idx){
@@ -313,11 +394,12 @@ function removerDisponibilidade(nome, idx){
   if(disponibilidade[nome].length === 0) delete disponibilidade[nome];
   salvar();
   renderDisponibilidade();
+  atualizarHorasDisponiveis();
 }
 
 function limparNomes(){
   if(!confirm('Tem certeza que deseja limpar todos os nomes?')) return;
-  nomes={}; roles={}; pres={};
+  nomes={}; roles={}; pres={}; disponibilidade={};
   for(let i=1;i<=32;i++){ nomes[i]='Caixa '+i; }
   salvar(); render();
   alert('Nomes resetados!');
@@ -374,7 +456,12 @@ function gerarCSV(){
   URL.revokeObjectURL(url);
 }
 
-window.onload = () => { render(); };
+window.onload = () => {
+  render();
+  const diaSelect = document.getElementById('diaDisponibilidade');
+  diaSelect.addEventListener('change', atualizarHorasDisponiveis);
+  atualizarHorasDisponiveis();
+};
 </script>
 </body>
 </html>
