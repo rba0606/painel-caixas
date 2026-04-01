@@ -3,87 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escala Caixas - Retiro Semana Santa</title>
+    <title>Escala Caixas - Retiro 2026</title>
     <style>
         :root {
-            --bg: #f8fafc;
+            --bg: #f1f5f9;
             --card: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
+            --text: #0f172a;
             --primary: #2563eb;
             --success: #16a34a;
-            --danger: #dc2626;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        * { box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; line-height: 1.5; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; }
         
         header {
             background: #1e293b;
             color: white;
             text-align: center;
-            padding: 25px 20px;
-            font-size: 1.3rem;
+            padding: 30px 20px;
+            font-size: 1.4rem;
             font-weight: bold;
             box-shadow: var(--shadow);
         }
 
-        .main { max-width: 500px; margin: 20px auto; padding: 0 15px; }
+        .main { max-width: 500px; margin: 0 auto; padding: 15px; }
 
         #status {
-            background: #e2e8f0;
+            background: #dbeafe;
             padding: 12px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 0.85rem;
             text-align: center;
             margin-bottom: 20px;
             font-weight: 600;
-            transition: all 0.3s;
+            border: 1px solid #bfdbfe;
         }
 
-        /* Formulário de Cadastro */
+        /* Formulário */
         .form-cadastro {
             background: #ffffff;
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 16px;
             margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
             box-shadow: var(--shadow);
         }
-        .form-cadastro strong { display: block; margin-bottom: 15px; color: var(--primary); font-size: 1.1rem; }
+        .form-cadastro b { display: block; margin-bottom: 15px; color: var(--primary); font-size: 1rem; }
         
         input, select {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 12px;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 1rem;
             background: #f8fafc;
+            outline: none;
         }
+        input:focus { border-color: var(--primary); }
 
         .btn-salvar {
             background: var(--primary);
             color: white;
             border: none;
             width: 100%;
-            padding: 14px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 10px;
             font-weight: bold;
             font-size: 1rem;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
-        .btn-salvar:active { opacity: 0.7; }
+        .btn-salvar:disabled { background: #94a3b8; }
 
-        /* Cards da Escala */
+        /* Estilo dos Balões/Cards */
         .card {
             background: var(--card);
-            border-radius: 15px;
-            padding: 18px;
-            margin-bottom: 20px;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 25px;
             box-shadow: var(--shadow);
-            border-top: 6px solid #cbd5e1;
+            border-top: 8px solid #cbd5e1;
         }
 
         .card.quinta { border-top-color: #3b82f6; }
@@ -91,11 +89,11 @@
         .card.sabado { border-top-color: #f59e0b; }
         .card.domingo { border-top-color: #ef4444; }
 
-        .dia-titulo { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .dia-titulo { font-size: 1.3rem; font-weight: 800; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
         
         .turno-bloco {
             background: #f8fafc;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 15px;
             margin-bottom: 15px;
             border: 1px solid #f1f5f9;
@@ -105,9 +103,9 @@
             display: inline-block;
             background: #334155;
             color: white;
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             margin-bottom: 12px;
             font-weight: 600;
         }
@@ -116,15 +114,16 @@
 
         .caixa-item {
             background: white;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             border: 1px solid #e2e8f0;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.1s;
         }
+        .caixa-item:active { transform: scale(0.95); }
 
-        .caixa-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
-        .caixa-nome { font-size: 0.9rem; font-weight: 700; color: #0f172a; word-break: break-word; }
+        .caixa-label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .caixa-nome { font-size: 0.95rem; font-weight: 700; color: #1e293b; overflow: hidden; text-overflow: ellipsis; }
         .caixa-vago { color: #cbd5e1; font-weight: 400; font-style: italic; }
 
         @media (max-width: 400px) {
@@ -137,11 +136,11 @@
 <header>📊 Escala de Caixas 2026</header>
 
 <main class="main">
-    <div id="status">Sincronizando dados...</div>
+    <div id="status">Carregando escala...</div>
 
     <div class="form-cadastro">
-        <strong>✍️ Reservar meu Horário</strong>
-        <input type="text" id="nomeInput" placeholder="Seu nome completo">
+        <b>✍️ Reservar meu Horário</b>
+        <input type="text" id="nomeInput" placeholder="Digite seu nome">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <select id="diaSelect" onchange="atualizarHoras()">
                 <option value="">Dia...</option>
@@ -157,11 +156,12 @@
         <button class="btn-salvar" id="btnSalvar" onclick="cadastrarHorario()">Confirmar Horário</button>
     </div>
 
-    <div id="painel"></div>
+    <div id="painel">
+        </div>
 </main>
 
 <script>
-    // URL DO SEU BANCO DE DADOS GOOGLE
+    // URL DO SEU GOOGLE APPS SCRIPT
     const API_URL = "https://script.google.com/macros/s/AKfycbyw0GW325qx241AlgUmcXyDvPstsLhSuCcFK-zIzTE4zskZuiTzN2oDFQulqi-QiHCNuA/exec";
 
     const escala = {
@@ -173,48 +173,26 @@
 
     let nomesDB = {};
 
-    async function loadData() {
-        const statusEl = document.getElementById('status');
-        statusEl.style.background = "#fef3c7";
-        statusEl.innerText = "🔄 Atualizando dados...";
-        
-        try {
-            const response = await fetch(API_URL);
-            nomesDB = await response.json();
-            render();
-            statusEl.style.background = "#dcfce7";
-            statusEl.innerText = "✅ Escala Atualizada";
-        } catch (e) {
-            statusEl.style.background = "#fee2e2";
-            statusEl.innerText = "⚠️ Erro de Sincronização";
-        }
+    // Forçar renderização inicial mesmo sem dados
+    function renderInicial() {
+        render();
     }
 
-    async function saveData(id, nome) {
-        const btn = document.getElementById('btnSalvar');
-        btn.disabled = true;
-        btn.innerText = "Salvando...";
-        
+    async function loadData() {
+        const statusEl = document.getElementById('status');
         try {
-            // Google Apps Script Post requer modo no-cors ou tratamento específico
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
-                body: JSON.stringify({ id: id, nome: nome })
-            });
-            
-            // Recarrega após um pequeno delay para o Google processar
-            setTimeout(() => {
-                loadData();
-                btn.disabled = false;
-                btn.innerText = "Confirmar Horário";
-                document.getElementById('nomeInput').value = '';
-            }, 1500);
-            
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            if (data) {
+                nomesDB = data;
+                render();
+                statusEl.innerText = "✅ Sincronizado com a nuvem";
+                statusEl.style.background = "#dcfce7";
+            }
         } catch (e) {
-            alert("Erro ao salvar dados.");
-            btn.disabled = false;
+            console.error("Erro ao carregar:", e);
+            statusEl.innerText = "⚠️ Modo Offline (tentando conectar...)";
+            statusEl.style.background = "#fee2e2";
         }
     }
 
@@ -225,23 +203,25 @@
         Object.keys(escala).forEach(dia => {
             const info = escala[dia];
             let html = `<div class="card ${info.css}">
-                <div class="dia-titulo"><span>${info.label}</span> <small style="font-weight:400; font-size:0.8rem">Semana Santa</small></div>`;
+                <div class="dia-titulo"><span>${info.label}</span></div>`;
             
             info.h.forEach((hora, i) => {
                 const idPix = info.pix[i];
                 const idCrt = info.crt[i];
-                const nPix = nomesDB[idPix] || "";
-                const nCrt = nomesDB[idCrt] || "";
+                
+                // Limpeza de dados para evitar "undefined"
+                const nPix = (nomesDB[idPix] && nomesDB[idPix].toString().trim() !== "") ? nomesDB[idPix] : "";
+                const nCrt = (nomesDB[idCrt] && nomesDB[idCrt].toString().trim() !== "") ? nomesDB[idCrt] : "";
 
                 html += `
                 <div class="turno-bloco">
                     <div class="hora-badge">🕒 ${hora}</div>
                     <div class="grid-caixas">
-                        <div class="caixa-item">
+                        <div class="caixa-item" onclick="manualEdit(${idPix}, '${nPix}')">
                             <div class="caixa-label">Caixa 1 (Pix)</div>
                             <div class="caixa-nome">${nPix || '<span class="caixa-vago">Disponível</span>'}</div>
                         </div>
-                        <div class="caixa-item">
+                        <div class="caixa-item" onclick="manualEdit(${idCrt}, '${nCrt}')">
                             <div class="caixa-label">Caixa 2 (Crt)</div>
                             <div class="caixa-nome">${nCrt || '<span class="caixa-vago">Disponível</span>'}</div>
                         </div>
@@ -251,6 +231,58 @@
             html += `</div>`;
             painel.innerHTML += html;
         });
+    }
+
+    async function cadastrarHorario() {
+        const nome = document.getElementById('nomeInput').value.trim();
+        const dia = document.getElementById('diaSelect').value;
+        const hora = document.getElementById('horaSelect').value;
+
+        if(!nome || !dia || !hora) return alert("Preencha seu nome e escolha o horário!");
+
+        const info = escala[dia];
+        const idx = info.h.indexOf(hora);
+        const idPix = info.pix[idx];
+        const idCrt = info.crt[idx];
+
+        let idAlocar = null;
+        if(!nomesDB[idPix] || nomesDB[idPix].toString().trim() === "") idAlocar = idPix;
+        else if(!nomesDB[idCrt] || nomesDB[idCrt].toString().trim() === "") idAlocar = idCrt;
+
+        if(!idAlocar) return alert("Este horário já está lotado!");
+
+        await salvarProcesso(idAlocar, nome);
+    }
+
+    async function manualEdit(id, nomeAtual) {
+        const novo = prompt("Editar nome:", nomeAtual);
+        if (novo !== null) {
+            await salvarProcesso(id, novo.trim());
+        }
+    }
+
+    async function salvarProcesso(id, nome) {
+        const btn = document.getElementById('btnSalvar');
+        btn.disabled = true;
+        btn.innerText = "Salvando...";
+        
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ id: id, nome: nome })
+            });
+            
+            setTimeout(() => {
+                loadData();
+                btn.disabled = false;
+                btn.innerText = "Confirmar Horário";
+                document.getElementById('nomeInput').value = '';
+            }, 1000);
+        } catch (e) {
+            alert("Erro ao salvar!");
+            btn.disabled = false;
+        }
     }
 
     function atualizarHoras() {
@@ -264,39 +296,9 @@
         }
     }
 
-    async function cadastrarHorario() {
-        const nome = document.getElementById('nomeInput').value.trim();
-        const dia = document.getElementById('diaSelect').value;
-        const hora = document.getElementById('horaSelect').value;
-
-        if(!nome || !dia || !hora) return alert("Por favor, preencha seu nome, o dia e o horário.");
-
-        const info = escala[dia];
-        const idx = info.h.indexOf(hora);
-        const idPix = info.pix[idx];
-        const idCrt = info.crt[idx];
-
-        // Lógica: Se o Pix estiver vago, vai para o Pix. Se não, vai para o Cartão.
-        let idAlocar = null;
-        const textoPix = (nomesDB[idPix] || "").toLowerCase();
-        const textoCrt = (nomesDB[idCrt] || "").toLowerCase();
-
-        if(!nomesDB[idPix] || textoPix === "" || textoPix.includes("caixa")) {
-            idAlocar = idPix;
-        } else if(!nomesDB[idCrt] || textoCrt === "" || textoCrt.includes("caixa")) {
-            idAlocar = idCrt;
-        }
-
-        if(!idAlocar) return alert("Desculpe, este horário já está totalmente preenchido!");
-
-        await saveData(idAlocar, nome);
-    }
-
-    // Carregar ao abrir a página
-    window.onload = loadData;
-    
-    // Atualização automática a cada 2 minutos para evitar conflitos
-    setInterval(loadData, 120000);
+    // Inicialização
+    renderInicial(); // Desenha os balões vazios imediatamente
+    loadData();      // Depois busca os nomes no Google
 </script>
 
 </body>
