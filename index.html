@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel de Caixas - Retiro Semana Santa</title>
+<title>Escala Caixas - Retiro Semana Santa</title>
 <style>
 :root {
   --bg: #f4f7ff;
@@ -18,7 +18,23 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: "Inter", Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
-header { background: #1e293b; color: #f8fafc; text-align: center; padding: 14px 16px; font-size: 1.2rem; font-weight: 700; }
+header {
+  background: url('fundo-semana-santa.jpg') center/cover no-repeat;
+  color: #ffffff;
+  text-align: center;
+  padding: 50px 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  position: relative;
+}
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 0;
+}
+header > * { position: relative; z-index: 1; }
 .main { max-width: 1100px; margin: 18px auto 30px; padding: 0 14px; }
 .card-header { margin-bottom: 28px; }
 .intervalo { background: #f1f5f9; color: #334155; padding: 4px 8px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; }
@@ -35,6 +51,10 @@ header { background: #1e293b; color: #f8fafc; text-align: center; padding: 14px 
 .btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .container { display: grid; gap: 14px; }
 .card { background: var(--card); padding: 14px; border-radius: 14px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
+.card.quinta { background: #eff6ff; }
+.card.sexta { background: #f0fdf4; }
+.card.sabado { background: #fef9c3; }
+.card.domingo { background: #fef2f2; }
 .card-header { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 12px; }
 .card-header b { font-size: 1rem; }
 .intervalo { font-size: 0.78rem; background: #f1f5f9; padding: 3px 8px; border-radius: 8px; color: #334155; font-weight: 600; }
@@ -62,6 +82,9 @@ header { background: #1e293b; color: #f8fafc; text-align: center; padding: 14px 
   .card { padding: 10px; border-radius: 12px; }
   .card-header { flex-direction: column; align-items: flex-start; gap: 5px; }
   .intervalo { position: static; margin-top: 4px; }
+  .panel { grid-template-columns: 1fr; gap: 8px; }
+  .panel input, .panel select, .panel button { font-size: 1rem; padding: 12px 10px; }
+  .panel select { appearance: none; -webkit-appearance: none; background-color: #fff; background-image: linear-gradient(45deg, transparent 50%, #334155 50%), linear-gradient(-45deg, transparent 50%, #334155 50%); background-position: calc(100% - 16px) center, calc(100% - 12px) center; background-size: 8px 8px; background-repeat: no-repeat; }
   .turno-balao { padding: 3px 8px; font-size: 0.7rem; }
   .info { font-size: 0.75rem; }
   .row { grid-template-columns: 1fr; gap: 7px; }
@@ -79,9 +102,9 @@ header { background: #1e293b; color: #f8fafc; text-align: center; padding: 14px 
 </style>
 </head>
 <body>
-<header>📊 Painel de Caixas - Retiro Semana Santa</header>
+<header>📊 Escala Caixas - Retiro Semana Santa</header>
 <main class="main">
-  <div class="info">Clique no nome para marcar presença/ausência. 2 caixas por hora (1 PIX + 1 Cartão), todos os 32 são escalados sem repetir entre dias. Use ✎ para editar nome.</div>
+  <div class="info"></div>
 
   <div class="card" style="border-color:#cbd5e1; background:#eef2ff;">
     <div class="card-header"><b>Cadastro de horário pessoal</b></div>
@@ -178,12 +201,24 @@ function editarNome(pos){
 
 function getHorariosPreenchidos(){
   const m = {};
-  Object.values(disponibilidade).forEach(lista => {
-    lista.forEach(item => {
-      const key = `${item.dia}|${item.hora}`;
-      m[key] = (m[key] || 0) + 1;
+
+  Object.keys(escala).forEach(dia => {
+    const d = escala[dia];
+    d.horas.forEach((hora, i) => {
+      const key = `${dia}|${hora}`;
+      const pixPos = d.pix[i];
+      const cartaoPos = d.cartao[i];
+      const isOcupado = (pos) => {
+        const nome = nomes[pos] || `Caixa ${pos}`;
+        return nome.trim() !== `Caixa ${pos}`;
+      };
+      let count = 0;
+      if(isOcupado(pixPos)) count++;
+      if(isOcupado(cartaoPos)) count++;
+      m[key] = count;
     });
   });
+
   return m;
 }
 
@@ -195,7 +230,11 @@ function isDiaCompleto(dia){
   if(!escala[dia]) return false;
   const horasDaEscala = escala[dia].horas;
   const horariosPreenchidos = getHorariosPreenchidos();
-  return horasDaEscala.every(hora => !!horariosPreenchidos[`${dia}|${hora}`]);
+  return horasDaEscala.every(hora => (horariosPreenchidos[`${dia}|${hora}`] || 0) >= 2);
+}
+
+function diaClass(dia){
+  return dia.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
 }
 
 function atualizarHorasDisponiveis(){
@@ -265,7 +304,7 @@ function render(){
 
   Object.keys(escala).forEach(dia => {
     const d = escala[dia];
-    const card = document.createElement('div'); card.className = 'card';
+    const card = document.createElement('div'); card.className = 'card ' + diaClass(dia);
     const header = document.createElement('div'); header.className = 'card-header';
     header.innerHTML = `<b>${dia}</b><span class='intervalo'>⏱ ${d.i}</span>`;
     card.appendChild(header);
